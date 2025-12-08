@@ -210,7 +210,7 @@ Finder.dispatch_refresh = util.debounce_wrap(10, function(self, on_render)
         util.set_buf_option(self.win.bufnr, "syntax", "fyler")
 
         -- Sync folds with tree structure
-        require("fyler.views.finder.fold").sync_folds(self.win.bufnr, files_table)
+        require("fyler.views.finder.fold").sync_folds(self.win.bufnr)
 
         -- Rendering file tree with additional info
         ui.files_with_info(files_table, function(files_with_info_table)

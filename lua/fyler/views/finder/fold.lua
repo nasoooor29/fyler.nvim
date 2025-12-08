@@ -53,8 +53,7 @@ end
 --- Update fold state after tree structure changes
 --- This ensures folds are recalculated when the tree changes
 ---@param bufnr integer Buffer number
----@param files_tree table The files tree structure (unused but kept for API consistency)
-function M.sync_folds(bufnr, files_tree)
+function M.sync_folds(bufnr)
   if not vim.api.nvim_buf_is_valid(bufnr) then
     return
   end
@@ -63,7 +62,7 @@ function M.sync_folds(bufnr, files_tree)
     vim.api.nvim_buf_call(bufnr, function()
       -- Update folds by recomputing fold levels
       -- This will re-evaluate foldexpr for all lines
-      vim.cmd("silent! normal! zx")
+      vim.fn.feedkeys("zx", "n")
     end)
   end)
 end
