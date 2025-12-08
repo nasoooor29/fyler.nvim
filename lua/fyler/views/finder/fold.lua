@@ -40,7 +40,6 @@ end
 ---@return string The text to display for folded lines
 function M.foldtext()
   local line = vim.fn.getline(vim.v.foldstart)
-  local fold_size = vim.v.foldend - vim.v.foldstart
   
   -- Parse the line to extract components
   local parser = require("fyler.views.finder.parser")
@@ -57,20 +56,13 @@ function M.foldtext()
     icon = icon_match .. " "
   end
   
-  -- Build fold text without concealed ref_id and without extra styling
-  -- Use a simple format to avoid highlight issues
-  local fold_text = indent .. icon .. name
-  
-  -- Add fold indicator with count
-  if fold_size > 0 then
-    fold_text = fold_text .. string.format(" [%d]", fold_size)
-  end
-  
-  return fold_text
+  -- Return fold text that looks exactly like the original line
+  -- No extra indicators or styling - just the line as it would appear normally
+  return indent .. icon .. name
 end
 
 --- Update fold state after tree structure changes
---- Preserves manual fold state by only updating fold definitions without resetting
+--- Preserves manual fold state by tracking ref_ids instead of line numbers
 ---@param bufnr integer Buffer number
 function M.sync_folds(bufnr)
   if not vim.api.nvim_buf_is_valid(bufnr) then
@@ -79,27 +71,35 @@ function M.sync_folds(bufnr)
   
   vim.schedule(function()
     vim.api.nvim_buf_call(bufnr, function()
-      -- Save current fold state (which lines are folded)
+      -- Save current fold state using ref_ids to handle line number changes
       local view = vim.fn.winsaveview()
-      local folded_lines = {}
+      local folded_ref_ids = {}
+      local parser = require("fyler.views.finder.parser")
       
-      -- Check which lines are currently folded
+      -- Check which ref_ids are currently folded
       for i = 1, vim.fn.line('$') do
-        if vim.fn.foldclosed(i) ~= -1 then
-          folded_lines[i] = true
+        if vim.fn.foldclosed(i) == i then  -- This line is the start of a closed fold
+          local line = vim.fn.getline(i)
+          local ref_id = parser.parse_ref_id(line)
+          if ref_id then
+            folded_ref_ids[ref_id] = true
+          end
         end
       end
       
-      -- Update fold definitions without changing fold state
-      -- Use 'zx' to update fold definitions
+      -- Update fold definitions
       vim.cmd("silent! normal! zx")
       
-      -- Restore the fold state
-      for line_num, _ in pairs(folded_lines) do
-        if vim.fn.foldclosed(line_num) == -1 then
-          -- Line should be folded but isn't, close it
-          vim.fn.setpos('.', {0, line_num, 1, 0})
-          vim.cmd("silent! normal! zc")
+      -- Restore the fold state using ref_ids
+      for i = 1, vim.fn.line('$') do
+        local line = vim.fn.getline(i)
+        local ref_id = parser.parse_ref_id(line)
+        if ref_id and folded_ref_ids[ref_id] then
+          -- This ref_id should be folded
+          if vim.fn.foldclosed(i) == -1 then
+            vim.fn.setpos('.', {0, i, 1, 0})
+            vim.cmd("silent! normal! zc")
+          end
         end
       end
       
