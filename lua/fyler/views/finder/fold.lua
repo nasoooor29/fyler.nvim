@@ -42,11 +42,29 @@ function M.foldtext()
   local line = vim.fn.getline(vim.v.foldstart)
   local fold_size = vim.v.foldend - vim.v.foldstart
   
-  -- Show the directory name with fold indicator
+  -- Parse the line to extract components
+  local parser = require("fyler.views.finder.parser")
+  local name = parser.parse_name(line)
+  
+  -- Get indentation
+  local indent = line:match("^(%s*)")
+  
+  -- Extract icon (everything between indent and ref_id)
+  -- Format: <indent><icon> /<ref_id> <name>
+  local icon = ""
+  local icon_match = line:match("^%s*(.-)%s*/")
+  if icon_match and icon_match ~= "" then
+    icon = icon_match .. " "
+  end
+  
+  -- Build fold text without concealed ref_id
+  local fold_text = indent .. icon .. name
+  
+  -- Add fold indicator
   if fold_size > 0 then
-    return line .. " ... [" .. fold_size .. " hidden]"
+    return fold_text .. " ... [" .. fold_size .. " hidden]"
   else
-    return line
+    return fold_text
   end
 end
 
