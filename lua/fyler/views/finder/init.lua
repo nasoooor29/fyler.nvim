@@ -209,6 +209,9 @@ Finder.dispatch_refresh = util.debounce_wrap(10, function(self, on_render)
         -- TODO: I don't know why we need to reset syntax on entering fyler buffer with `:e`
         util.set_buf_option(self.win.bufnr, "syntax", "fyler")
 
+        -- Sync folds with tree structure
+        require("fyler.views.finder.fold").sync_folds(self.win.bufnr)
+
         -- Rendering file tree with additional info
         ui.files_with_info(files_table, function(files_with_info_table)
           self.win.ui:render(files_with_info_table)

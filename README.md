@@ -87,6 +87,18 @@ vim.keymap.set(
 )
 ```
 
+### Folding
+
+Fyler supports Neovim's native folding feature for the file tree. Directories with children are automatically foldable, allowing you to use standard fold commands:
+
+- `zo` - Open fold under cursor
+- `zc` - Close fold under cursor  
+- `za` - Toggle fold under cursor
+- `zR` - Open all folds
+- `zM` - Close all folds
+
+Folding provides a visual way to hide/show directory contents without removing them from the tree (unlike the collapse mappings `<BS>` and `#`).
+
 > [!NOTE]
 > Run `:help fyler.nvim` OR visit [wiki pages](https://github.com/A7Lavinraj/fyler.nvim/wiki) for more detailed explanation and live showcase.
 
