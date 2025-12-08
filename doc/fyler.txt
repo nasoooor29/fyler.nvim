@@ -48,6 +48,33 @@ Fyler can be used through lua API:
   fyler.navigate("...")
 <
 
+FOLDING                                                         *fyler.folding*
+
+Fyler supports Neovim's native folding feature. The file tree automatically
+creates folds based on the directory structure, allowing you to use standard
+fold commands:
+
+- `zo` - Open fold under cursor
+- `zc` - Close fold under cursor  
+- `za` - Toggle fold under cursor
+- `zR` - Open all folds
+- `zM` - Close all folds
+- `zr` - Reduce folding (open one level)
+- `zm` - Add folding (close one level)
+
+Directories with children are foldable. When a directory is folded, its
+entire subtree is hidden. The fold text shows how many items are hidden.
+
+Folding is enabled by default with `foldlevel=99` (all folds open initially).
+You can customize fold behavior through standard Neovim options if needed.
+
+Note: Folding works alongside the existing collapse mappings:
+- `<BS>` - Collapse node (removes children from tree)
+- `#` - Collapse all (removes all expanded directories from tree)
+
+The difference is that folding only hides items visually while collapse
+actions remove them from the buffer until you re-expand the directory.
+
 ------------------------------------------------------------------------------
                                                                    *fyler.setup*
 CONFIGURATION
