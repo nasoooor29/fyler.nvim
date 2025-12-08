@@ -310,7 +310,7 @@ function config.defaults()
             cursorline = false,
             number = false,
             relativenumber = false,
-            winhighlight = "Normal:FylerNormal,NormalNC:FylerNormalNC",
+            winhighlight = "Normal:FylerNormal,NormalNC:FylerNormalNC,Folded:FylerNormal",
             wrap = false,
             signcolumn = "no",
             foldmethod = "expr",

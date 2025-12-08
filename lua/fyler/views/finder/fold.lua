@@ -57,19 +57,20 @@ function M.foldtext()
     icon = icon_match .. " "
   end
   
-  -- Build fold text without concealed ref_id
+  -- Build fold text without concealed ref_id and without extra styling
+  -- Use a simple format to avoid highlight issues
   local fold_text = indent .. icon .. name
   
-  -- Add fold indicator
+  -- Add fold indicator with count
   if fold_size > 0 then
-    return fold_text .. " ... [" .. fold_size .. " hidden]"
-  else
-    return fold_text
+    fold_text = fold_text .. string.format(" [%d]", fold_size)
   end
+  
+  return fold_text
 end
 
 --- Update fold state after tree structure changes
---- This ensures folds are recalculated when the tree changes
+--- Preserves manual fold state by only updating fold definitions without resetting
 ---@param bufnr integer Buffer number
 function M.sync_folds(bufnr)
   if not vim.api.nvim_buf_is_valid(bufnr) then
@@ -78,9 +79,32 @@ function M.sync_folds(bufnr)
   
   vim.schedule(function()
     vim.api.nvim_buf_call(bufnr, function()
-      -- Update folds by recomputing fold levels
-      -- This will re-evaluate foldexpr for all lines
-      vim.fn.feedkeys("zx", "n")
+      -- Save current fold state (which lines are folded)
+      local view = vim.fn.winsaveview()
+      local folded_lines = {}
+      
+      -- Check which lines are currently folded
+      for i = 1, vim.fn.line('$') do
+        if vim.fn.foldclosed(i) ~= -1 then
+          folded_lines[i] = true
+        end
+      end
+      
+      -- Update fold definitions without changing fold state
+      -- Use 'zx' to update fold definitions
+      vim.cmd("silent! normal! zx")
+      
+      -- Restore the fold state
+      for line_num, _ in pairs(folded_lines) do
+        if vim.fn.foldclosed(line_num) == -1 then
+          -- Line should be folded but isn't, close it
+          vim.fn.setpos('.', {0, line_num, 1, 0})
+          vim.cmd("silent! normal! zc")
+        end
+      end
+      
+      -- Restore view
+      vim.fn.winrestview(view)
     end)
   end)
 end
